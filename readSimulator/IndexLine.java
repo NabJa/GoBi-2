@@ -2,12 +2,14 @@ package readSimulator;
 
 public class IndexLine {
 
+	String chr;
 	long start;
 	long length;
 	int lineLength;
 	int lineTotalLength;
 
-	public IndexLine(long start, long length, int lineLength, int lineTotalLenth) {
+	public IndexLine(String chr,long start, long length, int lineLength, int lineTotalLenth) {
+		this.chr = chr;
 		this.start = start;
 		this.length = length;
 		this.lineLength = lineLength;

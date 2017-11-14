@@ -4,13 +4,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.zip.GZIPInputStream;
-
-import genomicUtils.Triplet;
+import genomicUtils.*;
 import readSimulator.IndexLine;
 
 public class GenomeSequenceExtractor {
@@ -18,12 +18,15 @@ public class GenomeSequenceExtractor {
 	// InputStream fastaInputStream;
 	File idx;
 	File fasta;
-	
+
 	BufferedReader reader = null;
-	HashMap<String, IndexLine> genomicIndex = new HashMap<String, IndexLine>();
+	ArrayList<IndexLine> genomicIndex = new ArrayList<IndexLine>();
 
 	BufferedReader countReader = null;
 	ArrayList<Triplet<String, String, Integer>> readcounts = new ArrayList<Triplet<String, String, Integer>>();
+
+	BufferedReader gtfReader = null;
+	HashMap<String, Gene> genes = new HashMap<String, Gene>();
 
 	/**
 	 * 
@@ -38,22 +41,23 @@ public class GenomeSequenceExtractor {
 		/*
 		 * Reads Fasta Index
 		 */
-		String rline = "";
+		String line = "";
+
 		try {
 			reader = new BufferedReader(new FileReader(idx));
-			while ((rline = reader.readLine()) != null) {
+			while ((line = reader.readLine()) != null) {
 
-				String[] indexLine = rline.split("\t");
+				String[] Line = line.split("\t");
 
-				String chr = indexLine[0];
-				long length = Long.valueOf(indexLine[1]);
-				long start = Long.valueOf(indexLine[2]);
-				int lineLength = Integer.parseInt(indexLine[3]);
-				int absoluteLineLength = Integer.parseInt(indexLine[4]);
+				String chr = Line[0];
+				long length = Long.valueOf(Line[1]);
+				long start = Long.valueOf(Line[2]);
+				int lineLength = Integer.parseInt(Line[3]);
+				int absoluteLineLength = Integer.parseInt(Line[4]);
 
-				IndexLine indexline = new IndexLine(length, start, lineLength, absoluteLineLength);
+				IndexLine indexline = new IndexLine(chr, length, start, lineLength, absoluteLineLength);
 
-				genomicIndex.put(chr, indexline);
+				genomicIndex.add(indexline);
 
 			}
 		} catch (Exception e) {
@@ -62,6 +66,10 @@ public class GenomeSequenceExtractor {
 
 	}
 
+	/**
+	 * 
+	 * @param simr
+	 */
 	public void readCounts(String simr) {
 		int lineNumber = 0;
 
@@ -83,7 +91,7 @@ public class GenomeSequenceExtractor {
 							count);
 
 					readcounts.add(readcount);
-					
+
 				}
 				lineNumber++;
 			}
@@ -94,6 +102,22 @@ public class GenomeSequenceExtractor {
 
 	}
 
+	/**
+	 * 
+	 * @param gtf
+	 */
+	public void readGTF(String gtf) {
+		GTFReader gtfreader = new GTFReader();
+		gtfreader.readCDS(gtf);
+		genes = gtfreader.getGenes();
+	}
+	
+	/**
+	 * 
+	 * @param chr
+	 * @param start
+	 * @param end
+	 */
 	public void getSequence(String chr, int start, int end) {
 
 		/**
@@ -114,5 +138,6 @@ public class GenomeSequenceExtractor {
 		}
 
 	}
+
 
 }
