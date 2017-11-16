@@ -90,6 +90,7 @@ public class ReadSimulator {
 
 		GenomeSequenceExtractor gse = new GenomeSequenceExtractor(thisFasta, fastaIndex);
 
+		gse.readIndex();
 		gse.readCounts(readcounts);
 		gse.readGTF(gtf);
 

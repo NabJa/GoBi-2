@@ -16,6 +16,10 @@ public class IndexLine {
 		this.lineTotalLength = lineTotalLenth;
 	}
 
+	public String getChr() {
+		return chr;
+	}
+	
 	public long getStart() {
 		return start;
 	}

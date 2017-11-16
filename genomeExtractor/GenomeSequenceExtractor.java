@@ -19,7 +19,7 @@ public class GenomeSequenceExtractor {
 	File idx;
 	File fasta;
 
-	BufferedReader reader = null;
+	BufferedReader indexReader = null;
 	ArrayList<IndexLine> genomicIndex = new ArrayList<IndexLine>();
 
 	BufferedReader countReader = null;
@@ -27,6 +27,8 @@ public class GenomeSequenceExtractor {
 
 	BufferedReader gtfReader = null;
 	HashMap<String, Gene> genes = new HashMap<String, Gene>();
+
+	ArrayList<String> sequences = new ArrayList<String>();
 
 	/**
 	 * 
@@ -38,14 +40,17 @@ public class GenomeSequenceExtractor {
 		this.idx = idx;
 		this.fasta = fasta;
 
-		/*
-		 * Reads Fasta Index
-		 */
+	}
+
+	/**
+	 * 
+	 */
+	public void readIndex() {
 		String line = "";
 
 		try {
-			reader = new BufferedReader(new FileReader(idx));
-			while ((line = reader.readLine()) != null) {
+			indexReader = new BufferedReader(new FileReader(idx));
+			while ((line = indexReader.readLine()) != null) {
 
 				String[] Line = line.split("\t");
 
@@ -63,7 +68,6 @@ public class GenomeSequenceExtractor {
 		} catch (Exception e) {
 			throw new RuntimeException("got error while reading input index files", e);
 		}
-
 	}
 
 	/**
@@ -111,33 +115,68 @@ public class GenomeSequenceExtractor {
 		gtfreader.readCDS(gtf);
 		genes = gtfreader.getGenes();
 	}
-	
+
+	/**
+	 * @param geneID
+	 * @param transcriptID
+	 * @return
+	 */
+	public Triplet<String, Integer, Integer> getTranscriptPos(String geneID, String transcriptID) {
+		Gene gene = genes.get(geneID);
+		RegionVector trans = gene.transcripts.get(transcriptID);
+
+		Integer start = trans.getX1();
+		Integer end = trans.getX2();
+		String chr = gene.geneChr;
+
+		Triplet<String, Integer, Integer> position = new Triplet<String, Integer, Integer>(chr, start, end);
+		return position;
+	}
+
+	public void getAllSequences() {
+		for (Triplet<String, String, Integer> readcount : readcounts) {
+			Triplet<String, Integer, Integer> position = getTranscriptPos(readcount.getFirst(), readcount.getSecond());
+
+			String seq = getSequence(position.getFirst(), position.getSecond(), position.getThird());
+			sequences.add(seq);
+		}
+	}
+
 	/**
 	 * 
 	 * @param chr
 	 * @param start
 	 * @param end
 	 */
-	public void getSequence(String chr, int start, int end) {
+	public String getSequence(String chr, int start, int end) {
 
-		/**
-		 * RAF for big FASTA file
-		 */
+		IndexLine index = null;
+		
+		for(IndexLine idx : genomicIndex) {
+			if(idx.getChr().equals(chr)) {
+				index = idx;
+				break;
+			}
+		}
+		
+
+		String seq = "";
+
 		try {
 			RandomAccessFile raffasta = new RandomAccessFile(fasta, "r");
 
-			raffasta.seek(start);
+			raffasta.seek(index.getStart());
 
 			int intChar = raffasta.read();
+			
 			String character = Character.toString((char) intChar);
-
 			System.out.println(character);
 
 		} catch (Exception e) {
 			throw new RuntimeException("got error while reading input raf files", e);
 		}
 
+		return seq;
 	}
-
 
 }
