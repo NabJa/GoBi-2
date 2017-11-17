@@ -29,8 +29,8 @@ public class GTFReader {
 
 					int firstTab = rline.indexOf('\t');
 					int secondTab = rline.indexOf('\t', firstTab + 1);
-					
-					if (rline.substring(secondTab + 1, secondTab + 4).toLowerCase().equals("cds")) {
+										
+					if (rline.substring(secondTab + 1, secondTab + 5).toLowerCase().equals("exon")) {
 						String[] line = rline.split("(\t)|(;)");
 						String chr = line[0];
 						int start = Integer.parseInt(line[3]);

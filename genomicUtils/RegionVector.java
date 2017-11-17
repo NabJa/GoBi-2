@@ -7,8 +7,8 @@ import java.util.Comparator;
 public class RegionVector {
 
 	public String id; // transcript ID
-	public int x1; // transcript start
-	public int x2; // transcript end
+	public int x1 = Integer.MAX_VALUE; // transcript start
+	public int x2 = 0; // transcript end
 
 	public ArrayList<Region> regions = new ArrayList<Region>(); // maybe Vector instead of ArrayList???
 
@@ -49,18 +49,6 @@ public class RegionVector {
 		return len;
 	}
 
-	public void addRegionUnsorted(Region region) {
-		regions.add(region);
-	}
-
-	public void addNewRegions(RegionVector rv) {
-		for (Region r : rv.regions) {
-			if (!regions.contains(r)) {
-				regions.add(r);
-			}
-		}
-	}
-
 	/**
 	 * adds the Region in a sorted way. Smallest start first.
 	 * 
@@ -77,6 +65,13 @@ public class RegionVector {
 				return;
 			}
 			regions.add(region);
+		}
+
+		if (region.getX1() < x1) {
+			x1 = region.getX1();
+		}
+		if (region.getX2() > x2) {
+			x2 = region.getX2();
 		}
 	}
 

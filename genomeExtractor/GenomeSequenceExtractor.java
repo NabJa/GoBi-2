@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.zip.GZIPInputStream;
 import genomicUtils.*;
-import readSimulator.IndexLine;
 
 public class GenomeSequenceExtractor {
 
@@ -26,7 +25,7 @@ public class GenomeSequenceExtractor {
 	ArrayList<Triplet<String, String, Integer>> readcounts = new ArrayList<Triplet<String, String, Integer>>();
 
 	BufferedReader gtfReader = null;
-	HashMap<String, Gene> genes = new HashMap<String, Gene>();
+	public HashMap<String, Gene> genes = new HashMap<String, Gene>();
 
 	ArrayList<String> sequences = new ArrayList<String>();
 
@@ -138,6 +137,8 @@ public class GenomeSequenceExtractor {
 			Triplet<String, Integer, Integer> position = getTranscriptPos(readcount.getFirst(), readcount.getSecond());
 
 			String seq = getSequence(position.getFirst(), position.getSecond(), position.getThird());
+//			int len = position.getThird() - position.getSecond();
+
 			sequences.add(seq);
 		}
 	}
@@ -151,30 +152,43 @@ public class GenomeSequenceExtractor {
 	public String getSequence(String chr, int start, int end) {
 
 		IndexLine index = null;
-		
-		for(IndexLine idx : genomicIndex) {
-			if(idx.getChr().equals(chr)) {
+		for (IndexLine idx : genomicIndex) {
+			if (idx.getChr().equals(chr)) {
 				index = idx;
 				break;
 			}
 		}
-		
+
+		long indexStart = index.getStart();
+		int indexLineLen = index.lineLength();
+		int indexLineTotal = index.lineTotalLength();
+		int breakLen = indexLineTotal - indexLineLen;
+		int seqLen = (end - start);
+
+		int skipLines = (int) Math.floor(start / indexLineLen);
+		int readStart = start + skipLines * breakLen;
 
 		String seq = "";
-
 		try {
+
 			RandomAccessFile raffasta = new RandomAccessFile(fasta, "r");
 
-			raffasta.seek(index.getStart());
+			raffasta.seek(indexStart + readStart);
 
-			int intChar = raffasta.read();
-			
-			String character = Character.toString((char) intChar);
-			System.out.println(character);
+			for(int i = 0; i < seqLen; i++) {
+				int intChar = raffasta.read();
+				String character = Character.toString((char) intChar);
+				seq += character;
+			}
+
+			raffasta.close();
 
 		} catch (Exception e) {
 			throw new RuntimeException("got error while reading input raf files", e);
 		}
+		// System.out.println("Sequence: " + seq);
+
+		seq = seq.replaceAll("\n", "");
 
 		return seq;
 	}

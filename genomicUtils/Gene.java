@@ -93,6 +93,10 @@ public class Gene {
 		});
 
 	}
+	
+	public String getChr() {
+		return geneChr;
+	}
 
 
 }
