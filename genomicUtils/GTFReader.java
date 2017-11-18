@@ -29,9 +29,18 @@ public class GTFReader {
 
 					int firstTab = rline.indexOf('\t');
 					int secondTab = rline.indexOf('\t', firstTab + 1);
-										
+					
+//					int thirdTab = rline.indexOf('\t', secondTab + 1);
+//					int fourthTab = rline.indexOf('\t', thirdTab + 1);
+//					int fifthTab = rline.indexOf('\t', fourthTab + 1);
+//					int sixthTab = rline.indexOf('\t', fifthTab + 1);
+//					int seventhTab = rline.indexOf('\t', sixthTab + 1);
+//					int eigthTab = rline.indexOf('\t', seventhTab + 1);			
+
 					if (rline.substring(secondTab + 1, secondTab + 5).toLowerCase().equals("exon")) {
+						
 						String[] line = rline.split("(\t)|(;)");
+						
 						String chr = line[0];
 						int start = Integer.parseInt(line[3]);
 						int end = Integer.parseInt(line[4]); 

@@ -100,29 +100,26 @@ public class ReadSimulator {
 		
 		gse.readGTF(gtf);
 		System.out.println("Finished reading GTF");
+
 		
+		long a = System.currentTimeMillis();
+
 		gse.getAllSequences();
 		System.out.println("Finished getting sequences");
 		
+		System.out.println(System.currentTimeMillis() - a);
 
-//		for(String trans : gse.genes.get("ENSG00000131018").transcripts.keySet()) 
-//		{
-//			int len = gse.genes.get("ENSG00000131018").transcripts.get(trans).getLength();
-//			System.out.println(trans + " " +len);
-//		}
+		
 		
 //		String seq = "";
 //		try {
 //			RandomAccessFile raffasta = new RandomAccessFile(fasta, "r");
 //
-//			raffasta.seek(4203);
-//
-//			for (int i = 0; i < 100 ; i++) {
+//			raffasta.seek(56);
 //				int intChar = raffasta.read();
 //				String character = Character.toString((char) intChar);
-//				System.out.print(i + character);
+//				System.out.print(character);
 //				seq += character;
-//			}
 //
 //			raffasta.close();
 //
@@ -132,7 +129,7 @@ public class ReadSimulator {
 //		// System.out.println("Sequence: " + seq);
 //
 //		seq = seq.replaceAll("\n", "");
-//		
-	}
 
+		
+	}
 }

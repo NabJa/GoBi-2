@@ -8,10 +8,10 @@ public class IndexLine {
 	int lineLength;
 	int lineTotalLength;
 
-	public IndexLine(String chr,long start, long length, int lineLength, int lineTotalLenth) {
+	public IndexLine(String chr,long length, long start, int lineLength, int lineTotalLenth) {
 		this.chr = chr;
-		this.start = start;
 		this.length = length;
+		this.start = start;
 		this.lineLength = lineLength;
 		this.lineTotalLength = lineTotalLenth;
 	}
@@ -38,6 +38,6 @@ public class IndexLine {
 
 		@Override 
 		public String toString() {
-			return "" + start + "\t" + length + "\t" + lineLength + "\t" + lineTotalLength;
+			return "" + chr + "\t" + start + "\t" + length + "\t" + lineLength + "\t" + lineTotalLength;
 		}
 }

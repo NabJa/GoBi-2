@@ -52,6 +52,6 @@ public class Region{
 	}
 	
 	public String toString() {
-		return "" + x1 + ":" + x2;
+		return "" + regionID + ":" + x1 + ":" + x2;
 	}
 }

@@ -3,10 +3,12 @@ package genomeExtractor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.zip.GZIPInputStream;
@@ -27,7 +29,11 @@ public class GenomeSequenceExtractor {
 	BufferedReader gtfReader = null;
 	public HashMap<String, Gene> genes = new HashMap<String, Gene>();
 
-	ArrayList<String> sequences = new ArrayList<String>();
+	RandomAccessFile raffasta = null;
+
+	// ArrayList<String> sequences = new ArrayList<String>();
+
+	HashMap<Triplet<String, String, Integer>, String> sequences = new HashMap<Triplet<String, String, Integer>, String>();
 
 	/**
 	 * 
@@ -39,6 +45,11 @@ public class GenomeSequenceExtractor {
 		this.idx = idx;
 		this.fasta = fasta;
 
+		try {
+			this.raffasta = new RandomAccessFile(fasta, "r");
+		} catch (Exception e) {
+			throw new RuntimeException("RAF build failed", e);
+		}
 	}
 
 	/**
@@ -77,15 +88,12 @@ public class GenomeSequenceExtractor {
 		int lineNumber = 0;
 
 		try {
-
 			countReader = new BufferedReader(new FileReader(simr));
-
 			String line = "";
 			while ((line = countReader.readLine()) != null) {
-
 				if (lineNumber != 0) {
-
 					String[] Line = line.split("\t");
+
 					String geneID = Line[0];
 					String transID = Line[1];
 					Integer count = Integer.parseInt(Line[2]);
@@ -94,15 +102,12 @@ public class GenomeSequenceExtractor {
 							count);
 
 					readcounts.add(readcount);
-
 				}
 				lineNumber++;
 			}
-
 		} catch (Exception e) {
 			throw new RuntimeException("got error while reading readcounts in line: " + lineNumber, e);
 		}
-
 	}
 
 	/**
@@ -133,13 +138,39 @@ public class GenomeSequenceExtractor {
 	}
 
 	public void getAllSequences() {
-		for (Triplet<String, String, Integer> readcount : readcounts) {
-			Triplet<String, Integer, Integer> position = getTranscriptPos(readcount.getFirst(), readcount.getSecond());
 
-			String seq = getSequence(position.getFirst(), position.getSecond(), position.getThird());
-//			int len = position.getThird() - position.getSecond();
+		for (Triplet<String, String, Integer> readcount : readcounts) // readcount = geneID, transID, count
+		{
+			String splicedTrans = "";
+			String chr = genes.get(readcount.getFirst()).geneChr;
 
-			sequences.add(seq);
+			for (Region r : genes.get(readcount.getFirst()).transcripts.get(readcount.getSecond()).regions) {
+				String seq = getSequence(chr, r.getX1(), r.getX2());
+				splicedTrans += seq;
+			}
+			splicedTrans.trim();
+
+			// if(genes.get(readcount.getFirst()).strand.equals("-")) {
+			// DNAUtils reverser = new DNAUtils();
+			// splicedTrans = reverser.revcomp(splicedTrans);
+			// }
+
+			// System.out.println(readcount.getSecond() + " " + splicedTrans.length() +" "+
+			// splicedTrans);
+			// if (readcount.getSecond().equals("ENST00000562083")) {
+			// System.out.println();
+			// System.out.println("Chromosom: " + genes.get(readcount.getFirst()).geneChr);
+			// System.out.println("Strand: " + genes.get(readcount.getFirst()).strand);
+			// System.out.println(readcount.getSecond() + " " + splicedTrans.length() + " "
+			// + splicedTrans);
+			// }
+
+			sequences.put(readcount, splicedTrans);
+		}
+		try {
+			raffasta.close();
+		} catch (Exception e) {
+			throw new RuntimeException("got error while closing RAF", e);
 		}
 	}
 
@@ -163,34 +194,37 @@ public class GenomeSequenceExtractor {
 		int indexLineLen = index.lineLength();
 		int indexLineTotal = index.lineTotalLength();
 		int breakLen = indexLineTotal - indexLineLen;
-		int seqLen = (end - start);
-
+		int seqLen = (end - start + 1);
 		int skipLines = (int) Math.floor(start / indexLineLen);
 		int readStart = start + skipLines * breakLen;
 
 		String seq = "";
 		try {
 
-			RandomAccessFile raffasta = new RandomAccessFile(fasta, "r");
+			raffasta.seek(indexStart + readStart - 1);
+			// raffasta.seek(indexStart + start);
 
-			raffasta.seek(indexStart + readStart);
+			// byte[] buffer = new byte[seqLen];
+			// raffasta.read(buffer);
+			// String exon = new String(buffer);
+			// seq += exon;
 
-			for(int i = 0; i < seqLen; i++) {
-				int intChar = raffasta.read();
-				String character = Character.toString((char) intChar);
-				seq += character;
+			int len = 0;
+			while (len < seqLen) {
+				int read = raffasta.read();
+				char readChar = (char) read;
+				if (readChar != '\n') {
+					seq += readChar;
+					len++;
+				}
 			}
-
-			raffasta.close();
 
 		} catch (Exception e) {
 			throw new RuntimeException("got error while reading input raf files", e);
 		}
-		// System.out.println("Sequence: " + seq);
 
 		seq = seq.replaceAll("\n", "");
 
 		return seq;
 	}
-
 }

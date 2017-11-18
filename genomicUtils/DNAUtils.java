@@ -2,21 +2,7 @@ package genomicUtils;
 
 public class DNAUtils {
 
-	
-	public static void main(String args[]) {
-		
-		String dna = "nnnnnnatgcgctaggagcttgcnnnnagtcag";
-		String comp = comp(dna);
-		String revcomp = revcomp(dna);
-		
-		System.out.println("My sequenc: " + dna + " " + dna.length());
-		System.out.println("My complem: " + comp + " " + comp.length());
-		System.out.println("My revcomp: " + revcomp + " " + revcomp.length());
-	}
-	
-	
-	
-	public static String comp(String strand) {
+	public String comp(String strand) {
 		strand = strand.toUpperCase();
 		char[] Strand = strand.toCharArray();
 		String comp = "";
@@ -37,7 +23,7 @@ public class DNAUtils {
 		return comp;
 	}
 	
-	public static String revcomp(String strand) {
+	public String revcomp(String strand) {
 		String comp = comp(strand);
 		char[] revcompa = comp.toCharArray();
 		String revcomp = "";
