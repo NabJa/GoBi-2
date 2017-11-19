@@ -1,29 +1,29 @@
 package genomicUtils;
 
-public class Triplet<T, U, V> {
+public class Triplet<X, Y, Z> {
 
-	private final T first;
-	private final U second;
-	private final V third;
+	private final X first;
+	private final Y second;
+	private final Z third;
 
-	public Triplet(T first, U second, V third) {
+	public Triplet(X first, Y second, Z third) {
 		this.first = first;
 		this.second = second;
 		this.third = third;
 	}
 
-	public T getFirst() {
+	public X getFirst() {
 		return first;
 	}
 
-	public U getSecond() {
+	public Y getSecond() {
 		return second;
 	}
 
-	public V getThird() {
+	public Z getThird() {
 		return third;
 	}
-	
+
 	@Override
 	public String toString() {
 		return "" + first + " " + second + " " + third;
