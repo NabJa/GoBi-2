@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import genomeExtractor.GenomeSequenceExtractor;
+import genomicUtils.Triplet;
 import genomicUtils.Tuple;;
 
 public class ReadSimulator {
@@ -92,66 +93,64 @@ public class ReadSimulator {
 			}
 		}
 
-		// File thisFasta = new File(fasta);
-		// File fastaIndex = new File(fidx);
-		//
-		// GenomeSequenceExtractor gse = new GenomeSequenceExtractor(thisFasta,
-		// fastaIndex);
-		// System.out.println("Finished gse creation");
-		//
-		// gse.readIndex();
-		// System.out.println("Finished reading Index");
-		//
-		// gse.readCounts(readcounts);
-		// System.out.println("Finished reading counts");
-		//
-		// gse.readGTF(gtf);
-		// System.out.println("Finished reading GTF");
-		//
-		//
-		// long a = System.currentTimeMillis();
-		//
-		// gse.getAllSequences();
-		// System.out.println("Finished getting sequences");
-		//
+		File thisFasta = new File(fasta);
+		File fastaIndex = new File(fidx);
+
+		long zeit = System.currentTimeMillis();
+
+		GenomeSequenceExtractor gse = new GenomeSequenceExtractor(thisFasta, fastaIndex);
+		System.out.println("Finished gse creation");
+
+		gse.readIndex();
+		System.out.println("Finished reading Index");
+
+		gse.readCounts(readcounts);
+		System.out.println("Finished reading counts");
+
+		gse.readGTF(gtf);
+		System.out.println("Finished reading GTF");
+
+		gse.getAllSequences();
+		System.out.println("Finished reading Genome");
+
+		long endTime = System.currentTimeMillis() - zeit;
+		System.out.println("Alles eingelesen in: " + endTime);
+
+		long length = 0;
+		long amountTrans = 0;
+
+		for (Triplet<String, String, Integer> readcount : gse.readcounts) {
+			String transSeq = gse.sequences.get(readcount);
+
+			length += transSeq.length();
+			amountTrans++;
+
+			for (int i = 0; i < readcount.getThird(); i++) {
+				String transSeqFrag = generateFragment(transSeq);
+				String fragmentRead = generateRead(transSeqFrag);
+				Tuple<StringBuilder, ArrayList<Integer>> mutRead = mutate(fragmentRead);
+			}
+		}
+
+		System.out.println(length / amountTrans);
+
+		long endTime1 = System.currentTimeMillis() - zeit;
+		System.out.println("Fertig in " + endTime1);
+
 		// System.out.println(System.currentTimeMillis() - a);
-
-		// String seq = "";
-		// try {
-		// RandomAccessFile raffasta = new RandomAccessFile(fasta, "r");
-		//
-		// raffasta.seek(56);
-		// int intChar = raffasta.read();
-		// String character = Character.toString((char) intChar);
-		// System.out.print(character);
-		// seq += character;
-		//
-		// raffasta.close();
-		//
-		// } catch (Exception e) {
-		// throw new RuntimeException("got error while reading input raf files", e);
-		// }
-		// // System.out.println("Sequence: " + seq);
-		//
-		// seq = seq.replaceAll("\n", "");
-
-		String transcript = "ATGGCGGGGAGGAGGAGGAGAAGGCGGCGGCGGACCGAGCTGCGCTCTGTCAGTACCATTTGAGCCATTCGCTTCCTGACAAGGCCCGTGGCGAGGGGAGAGGAGCTGAAGGGGCCGTGGGGGATCAGTGTGACTGTGGGAAGATGGAGGAGTATGAGAAGTTCTGTGAAAAAAGTCTTGCAGAATACAAGAAGCATCACTATCCACAGAGAGCTTTCTCCCTGCTCAGTCTGAAAGTATCTCACTTATTCGCTTTCATGGAGTGGCTATCCTTTCTCCACTGAAAGCGAGGAGTTACTAAAAAGCAAGATGTTAGCTTTTGAAGAAATGCGGAAGAGACTAGAAGAACAGCACGCCCAGCAATTATCACTACTCATAGCTGAGCAGGAAAGGGAACAAGAAAGACTGCAAAAGGAAATAGAAGAGCAGGAGAAAATGTTAAAAGAGAAGAAGGCAATGACAGCGGAAGCCTCTGAGTTGGACATTAACAATGCAGTGGAATTAGAATGGAGAAAAATAAGTGACTCTAGTTTGCTGGAAACAATGCTGTCTCAAGCGGACTCACTCCATACTTCAAATTCAAATAGTTCTGGT";
-		generateFragment(transcript);
-
-		String mutante = "AAAAAAAAAAATTTTTTTTTTTTTTTTTTTTTTTGGGGGGGGGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCCCC";
-		Tuple<StringBuilder, ArrayList<Integer>> mutierte = mutate(mutante);
 
 	}
 
 	public static String generateFragment(String trans) {
 
 		Random rdm = new Random();
-		double rand = rdm.nextGaussian() * SD + frlength;
-		int fragmentLength1 = (int) Math.round(rand);
-		int fragmentLength = fragmentLength1 < 0 ? -fragmentLength1 : fragmentLength1;
+		int fragmentLength = Integer.MAX_VALUE;
 
-		// System.out.println();
-		// System.out.println("Normal distrubution length: " + fragmentLength);
+		while (fragmentLength > trans.length()) {
+			double rand = rdm.nextGaussian() * SD + frlength;
+			int fragmentLength1 = (int) Math.round(rand);
+			fragmentLength = fragmentLength1 < 0 ? -fragmentLength1 : fragmentLength1;
+		}
 
 		if (fragmentLength >= length) // fragment length >= read Length
 		{
@@ -160,19 +159,12 @@ public class ReadSimulator {
 			String fragSeq = trans.substring(randomStart, randomStart + fragmentLength);
 			return fragSeq;
 
-			// System.out.println("Track 1");
-			// System.out.println(fragSeq);
-			// System.out.println("Fragment Length" + fragSeq.length());
-
 		} else {
 			int possibleStarts = trans.length() - length;
 			int randomStart = ThreadLocalRandom.current().nextInt(possibleStarts + 1);
 			String fragSeq = trans.substring(randomStart, randomStart + length);
 			return fragSeq;
 
-			// System.out.println("Track 2");
-			// System.out.println(fragSeq);
-			// System.out.println("Fragment Length" + fragSeq.length());
 		}
 
 	}
@@ -224,8 +216,9 @@ public class ReadSimulator {
 				}
 			}
 		}
-		
-		Tuple<StringBuilder, ArrayList<Integer>>mutations  = new Tuple<StringBuilder, ArrayList<Integer>>(readS, mutPos);
+
+		Tuple<StringBuilder, ArrayList<Integer>> mutations = new Tuple<StringBuilder, ArrayList<Integer>>(readS,
+				mutPos);
 
 		return mutations;
 

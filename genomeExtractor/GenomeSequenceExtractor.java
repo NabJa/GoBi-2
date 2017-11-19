@@ -24,16 +24,17 @@ public class GenomeSequenceExtractor {
 	ArrayList<IndexLine> genomicIndex = new ArrayList<IndexLine>();
 
 	BufferedReader countReader = null;
-	ArrayList<Triplet<String, String, Integer>> readcounts = new ArrayList<Triplet<String, String, Integer>>();
+	public ArrayList<Triplet<String, String, Integer>> readcounts = new ArrayList<Triplet<String, String, Integer>>();
 
 	BufferedReader gtfReader = null;
 	public HashMap<String, Gene> genes = new HashMap<String, Gene>();
 
 	RandomAccessFile raffasta = null;
 
+	public HashMap<Triplet<String, String, Integer>, String> sequences = new HashMap<Triplet<String, String, Integer>, String>();
+
 	// ArrayList<String> sequences = new ArrayList<String>();
 
-	HashMap<Triplet<String, String, Integer>, String> sequences = new HashMap<Triplet<String, String, Integer>, String>();
 
 	/**
 	 * 
@@ -149,21 +150,6 @@ public class GenomeSequenceExtractor {
 				splicedTrans += seq;
 			}
 			splicedTrans.trim();
-
-			// if(genes.get(readcount.getFirst()).strand.equals("-")) {
-			// DNAUtils reverser = new DNAUtils();
-			// splicedTrans = reverser.revcomp(splicedTrans);
-			// }
-
-			// System.out.println(readcount.getSecond() + " " + splicedTrans.length() +" "+
-			// splicedTrans);
-			// if (readcount.getSecond().equals("ENST00000562083")) {
-			// System.out.println();
-			// System.out.println("Chromosom: " + genes.get(readcount.getFirst()).geneChr);
-			// System.out.println("Strand: " + genes.get(readcount.getFirst()).strand);
-			// System.out.println(readcount.getSecond() + " " + splicedTrans.length() + " "
-			// + splicedTrans);
-			// }
 
 			sequences.put(readcount, splicedTrans);
 		}
