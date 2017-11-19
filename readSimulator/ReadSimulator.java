@@ -8,7 +8,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
+import fastqWriter.FastqWriter;
 import genomeExtractor.GenomeSequenceExtractor;
+import genomicUtils.DNAUtils;
 import genomicUtils.Triplet;
 import genomicUtils.Tuple;;
 
@@ -116,23 +118,48 @@ public class ReadSimulator {
 		long endTime = System.currentTimeMillis() - zeit;
 		System.out.println("Alles eingelesen in: " + endTime);
 
-		long length = 0;
-		long amountTrans = 0;
+		String rwod = od + "\\rw.fastq";
+		String fwod = od + "\\fw.fastq";
 
-		for (Triplet<String, String, Integer> readcount : gse.readcounts) {
+		System.out.println(rwod + " " + fwod);
+
+		FastqWriter fastqRW = new FastqWriter(rwod);
+		FastqWriter fastqFW = new FastqWriter(fwod);
+		DNAUtils dnautil = new DNAUtils();
+
+		StringBuffer qualityBuffer = new StringBuffer(length);
+		for (int i = 0; i < length; i++) {
+			qualityBuffer.append("I");
+		}
+		String qualityString = qualityBuffer.toString();
+		
+		long id = 0;
+
+		for (Triplet<String, String, Integer> readcount : gse.readcounts) // For every transcript in readcounts
+		{
 			String transSeq = gse.sequences.get(readcount);
+			String strand = gse.genes.get(readcount.getFirst()).strand;
 
-			length += transSeq.length();
-			amountTrans++;
-
-			for (int i = 0; i < readcount.getThird(); i++) {
+			for (int i = 0; i < readcount.getThird(); i++) // Make count many reads
+			{
 				String transSeqFrag = generateFragment(transSeq);
 				String fragmentRead = generateRead(transSeqFrag);
 				Tuple<StringBuilder, ArrayList<Integer>> mutRead = mutate(fragmentRead);
+				
+				
+				if (strand.equals("-")) {
+					fastqRW.writeFastq(id, mutRead.getFirst().toString(), id, qualityString);
+					fastqFW.writeFastq(id, dnautil.revcomp(mutRead.getFirst().toString()), id, qualityString);
+				} else {
+					fastqFW.writeFastq(id, mutRead.getFirst().toString(), id, qualityString);
+					fastqRW.writeFastq(id, dnautil.revcomp(mutRead.getFirst().toString()), id, qualityString);
+				}
+				id++;
 			}
 		}
-
-		System.out.println(length / amountTrans);
+		
+		fastqRW.closeFastq();
+		fastqFW.closeFastq();
 
 		long endTime1 = System.currentTimeMillis() - zeit;
 		System.out.println("Fertig in " + endTime1);
