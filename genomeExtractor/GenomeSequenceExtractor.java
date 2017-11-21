@@ -2,17 +2,16 @@ package genomeExtractor;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.RandomAccessFile;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.zip.GZIPInputStream;
-import genomicUtils.*;
+
+import genomicUtils.GTFReader;
+import genomicUtils.Gene;
+import genomicUtils.Region;
+import genomicUtils.RegionVector;
+import genomicUtils.Triplet;
 
 public class GenomeSequenceExtractor {
 
@@ -32,9 +31,8 @@ public class GenomeSequenceExtractor {
 	RandomAccessFile raffasta = null;
 
 	public HashMap<Triplet<String, String, Integer>, String> sequences = new HashMap<Triplet<String, String, Integer>, String>();
-
+	public HashMap<Triplet<String, String, Integer>, RegionVector> transGenomicRegions = new HashMap<Triplet<String, String, Integer>, RegionVector>();
 	// ArrayList<String> sequences = new ArrayList<String>();
-
 
 	/**
 	 * 
@@ -143,14 +141,26 @@ public class GenomeSequenceExtractor {
 		for (Triplet<String, String, Integer> readcount : readcounts) // readcount = geneID, transID, count
 		{
 			String splicedTrans = "";
+			RegionVector genomicRegions = new RegionVector(readcount.getSecond());
+
 			String chr = genes.get(readcount.getFirst()).geneChr;
 
-			for (Region r : genes.get(readcount.getFirst()).transcripts.get(readcount.getSecond()).regions) {
+			for (Region r : genes.get(readcount.getFirst()).transcripts.get(readcount.getSecond()).regions) // Gets
+																											// sequence
+																											// and
+																											// genmic
+																											// position
+																											// of every
+																											// region
+			{
 				String seq = getSequence(chr, r.getX1(), r.getX2());
-				splicedTrans += seq;
-			}
-			splicedTrans.trim();
 
+				splicedTrans += seq;
+				genomicRegions.addRegion(r);
+			}
+			splicedTrans.trim(); // maybe trim already in loop?
+
+			transGenomicRegions.put(readcount, genomicRegions);
 			sequences.put(readcount, splicedTrans);
 		}
 		try {
@@ -213,4 +223,7 @@ public class GenomeSequenceExtractor {
 
 		return seq;
 	}
+
+
+
 }
