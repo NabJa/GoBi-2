@@ -7,6 +7,10 @@ public class Region{
 	public String regionID;
 	public String geneID;
 
+	public Region() {
+		
+	}
+	
 	public Region(int x1, int x2) {
 		this.x1 = x1;
 		this.x2 = x2;
@@ -16,6 +20,11 @@ public class Region{
 	 this.x1 = x1;
 	 this.x2 = x2;
 	 this.regionID = id;
+	 }
+	 
+	 public void setRegions(int x1, int x2) {
+		 this.x1 = x1;
+		 this.x2 = x2;
 	 }
 
 	public String getID() {

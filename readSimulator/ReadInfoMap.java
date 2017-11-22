@@ -25,7 +25,8 @@ public class ReadInfoMap {
 		}
 		
 		try {
-			writer.write("readid\tchr\tgene\ttranscript\tt_fw_regvec\tt_rw_regvec\tfw_regvec\trw_regvec\tfw_mut\trw_mut");
+			writer.write("readid\tchr_id\tgene_id\ttranscript_id\tt_fw_regvec\tt_rw_regvec\tfw_regvec\trw_regvec\tfw_mut\trw_mut");
+			writer.newLine();
 		} catch (Exception e) {
 			throw new RuntimeException("Got error while printing mapinfo header" , e);
 		}
@@ -44,13 +45,17 @@ public class ReadInfoMap {
 		for (int fmut : fw_mut) {
 			fwMut += ("," + fmut);
 		}
-		fwMut = fwMut.substring(1, fwMut.length());
+		if(fwMut.length() > 1) {
+			fwMut = fwMut.substring(1, fwMut.length());			
+		}
 		
 		String rwMut = "";
 		for (int rmut : rw_mut) {
 			rwMut += ("," + rmut);
 		}
-		rwMut = rwMut.substring(1, rwMut.length());
+		if(rwMut.length() > 1) {
+			rwMut = rwMut.substring(1, rwMut.length());			
+		}
 		
 		try {
 			
