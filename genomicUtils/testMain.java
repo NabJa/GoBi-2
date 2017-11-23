@@ -1,5 +1,6 @@
 package genomicUtils;
 
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class testMain {
@@ -37,7 +38,16 @@ public class testMain {
 			RegionVector genregions = getTheShitDone(testString, testVector, 26);
 
 			System.out.println(genregions);
-		}
+
+		}	
+		
+		String str = "ATGCX";
+		
+		DNAUtils dna = new DNAUtils();
+		dna.revcomp(str);
+		System.out.println(dna.revcomp(str));
+
+		
 	}
 
 	public static RegionVector getTheShitDone(String fragment, RegionVector parent, int rdmStart) {
@@ -62,10 +72,11 @@ public class testMain {
 		} else if (i == 0) {
 			pos1 = parent.regions.get(i).getX1();
 		} else {
-			pos1 = parent.regions.get(i - 1).getX1() + (rdmStart - (distanceTravelled - parent.regions.get(i - 1).getLength() - i));
+			pos1 = parent.regions.get(i - 1).getX1()
+					+ (rdmStart - (distanceTravelled - parent.regions.get(i - 1).getLength() - i));
 		}
 
-		if (rdmStart + FL < distanceTravelled - i ) // if end is in first region
+		if (rdmStart + FL < distanceTravelled - i) // if end is in first region
 		{
 			int pos12 = pos1 + FL;
 			Region onlyRegion = new Region(pos1, pos12);

@@ -1,6 +1,7 @@
 package fastqWriter;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -64,6 +65,15 @@ public class FastqWriter {
 	public FastqWriter(String outputDestination) {
 
 		this.outputDestination = outputDestination;
+		try {
+			this.file = new FileWriter(outputDestination); 
+			this.writer = new BufferedWriter(file);
+		} catch (Exception e) {
+			throw new RuntimeException("got error while /.", e);
+		}
+	}	
+	
+	public FastqWriter(File outputDestination) {
 		try {
 			this.file = new FileWriter(outputDestination); 
 			this.writer = new BufferedWriter(file);

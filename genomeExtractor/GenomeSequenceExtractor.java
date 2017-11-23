@@ -161,7 +161,6 @@ public class GenomeSequenceExtractor {
 			splicedTrans.trim(); // maybe trim already in loop?
 
 			transGenomicRegions.put(readcount, genomicRegions);
-			System.out.println(readcount.getSecond() + " " + splicedTrans);
 			sequences.put(readcount, splicedTrans);
 		}
 		try {
