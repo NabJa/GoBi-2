@@ -25,7 +25,7 @@ public class testMain {
 			System.out.println(genregions);
 
 		} else {
-			String testString = "1234";
+			String testString = "12345";
 
 			Region r4 = new Region(10, 20); // 0:9
 			Region r5 = new Region(30, 40); // 10:19
@@ -35,32 +35,27 @@ public class testMain {
 			testVector.addRegion(r5);
 			testVector.addRegion(r6);
 
-			RegionVector genregions = getTheShitDone(testString, testVector, 26);
+//			RegionVector genregions = getTheShitDone(testString, testVector, 1);
+//			System.out.println(genregions);				
+			
+			for(int i = 1; i< 30; i++) {
+				RegionVector genregions = getTheShitDone(testString, testVector, i);
+				System.out.println(i + " " +genregions);				
+			}
 
-			System.out.println(genregions);
-
-		}	
-		
-		String str = "ATGCX";
-		
-		DNAUtils dna = new DNAUtils();
-		dna.revcomp(str);
-		System.out.println(dna.revcomp(str));
-
-		
+		}		
 	}
 
 	public static RegionVector getTheShitDone(String fragment, RegionVector parent, int rdmStart) {
-
 		RegionVector genomicRegions = new RegionVector();
 
 		int FL = fragment.length();
 		int distanceTravelled = 0;
 		int i = 0;
 
-		while (rdmStart >= distanceTravelled) // skip regions if start isnt in it
+		while (rdmStart > distanceTravelled) // skip regions if start isnt in it
 		{
-			distanceTravelled += parent.regions.get(i).getLength() + 1;
+			distanceTravelled += parent.regions.get(i).getLength()+1;
 			i++;
 		}
 
@@ -68,25 +63,24 @@ public class testMain {
 
 		if (i - 1 == 0) // if start is in first region
 		{
-			pos1 = parent.regions.get(i - 1).getX1() + rdmStart;
+			pos1 = parent.regions.get(i - 1).getX1() + rdmStart - 1;
 		} else if (i == 0) {
 			pos1 = parent.regions.get(i).getX1();
 		} else {
-			pos1 = parent.regions.get(i - 1).getX1()
-					+ (rdmStart - (distanceTravelled - parent.regions.get(i - 1).getLength() - i));
+			pos1 = parent.regions.get(i - 1).getX1()+ (rdmStart - (distanceTravelled - parent.regions.get(i - 1).getLength() - i) -1 );
 		}
 
-		if (rdmStart + FL < distanceTravelled - i) // if end is in first region
+		if (rdmStart + FL <= distanceTravelled + 1) // if end is in first region
 		{
 			int pos12 = pos1 + FL;
 			Region onlyRegion = new Region(pos1, pos12);
 			genomicRegions.addRegion(onlyRegion);
 
 		} else {
-			Region firstRegion = new Region(pos1, parent.regions.get(i - 1).getX2());
+			Region firstRegion = new Region(pos1, parent.regions.get(i - 1).getX2() + 1);
 			genomicRegions.addRegion(firstRegion);
 
-			while (rdmStart + FL > distanceTravelled + i) // save regions inside of fragment
+			while (rdmStart + FL >= distanceTravelled) // save regions inside of fragment
 			{
 				distanceTravelled += parent.regions.get(i).getLength();
 				if (rdmStart + FL > distanceTravelled) // if FALSE: arrived at last region
@@ -95,20 +89,20 @@ public class testMain {
 				}
 				i++;
 			}
-			if (i != parent.regions.size()) {
-
+			
 				int pos12;
 				Region lastRegion = new Region();
 				if (distanceTravelled - i != (rdmStart + FL)) {
 					pos12 = parent.regions.get(i - 1).getX2() - (distanceTravelled - (rdmStart + FL));
-					lastRegion = new Region(parent.regions.get(i - 1).getX1(), pos12 + 1);
+					lastRegion = new Region(parent.regions.get(i - 1).getX1(), pos12 - 1);
 				} else {
+					System.out.println("hihiihmmm");
 					pos12 = parent.regions.get(i).getX2() - distanceTravelled + i;
 					lastRegion = new Region(parent.regions.get(i).getX1(), pos12 + 1);
 				}
 				genomicRegions.addRegion(lastRegion);
-			}
+			
 		}
 		return genomicRegions;
-	}
+		}
 }

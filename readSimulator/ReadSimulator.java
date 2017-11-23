@@ -120,7 +120,7 @@ public class ReadSimulator {
 
 		long endTime = System.currentTimeMillis() - zeit;
 		System.out.println("Alles eingelesen in: " + endTime);
-	
+
 		File rwod = new File(od, "rw.fastq");
 		File fwod = new File(od, "fw.fastq");
 		File map = new File(od, "read.mappinginfo");
@@ -165,7 +165,7 @@ public class ReadSimulator {
 				Tuple<StringBuilder, ArrayList<Integer>> mutRead = mutate(fragmentRead);
 				Tuple<StringBuilder, ArrayList<Integer>> mutRwRead = mutate(fragmentRwRead);
 
-//				int readRelativeRandomStart = transSeqFrag.getSecond() + fragmentRead;
+				// int readRelativeRandomStart = transSeqFrag.getSecond() + fragmentRead;
 
 				RegionVector fw_regvec;
 				RegionVector rw_regvec;
@@ -174,30 +174,38 @@ public class ReadSimulator {
 
 				if (strand.equals("-")) {
 
-					Tuple<String, Integer> rwTransSeqFrag = new Tuple<String, Integer>(dnautil.revcomp(transSeqFrag.getFirst()), transSeqFrag.getSecond());
-					
+					Tuple<String, Integer> rwTransSeqFrag = new Tuple<String, Integer>(
+							dnautil.revcomp(transSeqFrag.getFirst()), transSeqFrag.getSecond());
+
 					fastqRW.writeFastq(id, mutRead.getFirst().toString(), id, qualityString);
 					fastqFW.writeFastq(id, mutRwRead.getFirst().toString(), id, qualityString);
 
-					fw_regvec = getGenomicRegion(mutRwRead.getFirst().toString(), transGenomicRegion, (transSeqFrag.getSecond() + (transSeqFrag.getFirst().length()-length) ));
-					rw_regvec = getGenomicRegion(mutRead.getFirst().toString(), transGenomicRegion, 	transSeqFrag.getSecond());
+					fw_regvec = getGenomicRegion(mutRwRead.getFirst().toString(), transGenomicRegion,
+							(rwTransSeqFrag.getSecond() + (rwTransSeqFrag.getFirst().length() - length)));
+					rw_regvec = getGenomicRegion(mutRead.getFirst().toString(), transGenomicRegion,
+							rwTransSeqFrag.getSecond());
 
-					t_fw_regvec.setRegions((transSeqFrag.getSecond() + transSeqFrag.getFirst().length() - length), (transSeqFrag.getSecond() + transSeqFrag.getFirst().length()));
-					t_rw_regvec.setRegions(transSeqFrag.getSecond(), (transSeqFrag.getSecond() + length));
+					t_rw_regvec.setRegions(rwTransSeqFrag.getSecond(), (rwTransSeqFrag.getSecond() + length));
+					t_fw_regvec.setRegions((rwTransSeqFrag.getSecond() + rwTransSeqFrag.getFirst().length() - length),
+							(rwTransSeqFrag.getSecond() + rwTransSeqFrag.getFirst().length()));
 
 				} else {
 
 					fastqFW.writeFastq(id, mutRead.getFirst().toString(), id, qualityString);
 					fastqRW.writeFastq(id, mutRwRead.getFirst().toString(), id, qualityString);
-					
-					rw_regvec = getGenomicRegion(mutRwRead.getFirst().toString(), transGenomicRegion, (transSeqFrag.getSecond() + (transSeqFrag.getFirst().length()-length) ));
-					fw_regvec = getGenomicRegion(mutRead.getFirst().toString(), transGenomicRegion, transSeqFrag.getSecond());
+
+					rw_regvec = getGenomicRegion(mutRwRead.getFirst().toString(), transGenomicRegion,
+							(transSeqFrag.getSecond() + (transSeqFrag.getFirst().length() - length)));
+					fw_regvec = getGenomicRegion(mutRead.getFirst().toString(), transGenomicRegion,
+							transSeqFrag.getSecond());
 
 					t_fw_regvec.setRegions(transSeqFrag.getSecond(), (transSeqFrag.getSecond() + length));
-					t_rw_regvec.setRegions((transSeqFrag.getSecond() + transSeqFrag.getFirst().length() - length),	(transSeqFrag.getSecond() + transSeqFrag.getFirst().length()));
+					t_rw_regvec.setRegions((transSeqFrag.getSecond() + transSeqFrag.getFirst().length() - length),
+							(transSeqFrag.getSecond() + transSeqFrag.getFirst().length()));
 
 				}
-				mapInfo.writeMapinfo(id, chr, geneID, transID, fw_regvec, rw_regvec, t_fw_regvec, t_rw_regvec, mutRead.getSecond(), mutRwRead.getSecond());
+				mapInfo.writeMapinfo(id, chr, geneID, transID, fw_regvec, rw_regvec, t_fw_regvec, t_rw_regvec,
+						mutRead.getSecond(), mutRwRead.getSecond());
 				id++;
 			}
 		}
@@ -215,10 +223,10 @@ public class ReadSimulator {
 
 	public static Tuple<String, Integer> generateFragment(String trans) {
 
-		if(trans.length() < length) {
+		if (trans.length() < length) {
 			throw new RuntimeException("Transcript is smaller then read length");
 		}
-		
+
 		Random rdm = new Random();
 		int fragmentLength = Integer.MAX_VALUE;
 
@@ -227,19 +235,21 @@ public class ReadSimulator {
 			int fragmentLength1 = (int) Math.round(rand);
 			fragmentLength = fragmentLength1 < 0 ? -fragmentLength1 : fragmentLength1;
 		}
-		
+
 		int randomStart = 0;
-		if(trans.length() != fragmentLength) {
+		if (trans.length() != fragmentLength) {
 			int possibleStarts = trans.length() - fragmentLength;
 			try {
+			
 				randomStart = ThreadLocalRandom.current().nextInt(possibleStarts); // MAYBE: possibleStarts +1
+				
 			} catch (Exception e) {
-				throw new RuntimeException("Error with trans "+ trans + " and rdmStart " + randomStart + " possible starts: " + possibleStarts + " fragment length "+ fragmentLength);
+				throw new RuntimeException("Error with trans " + trans + " and rdmStart " + randomStart
+						+ " possible starts: " + possibleStarts + " fragment length " + fragmentLength);
 			}
 		}
-		
-
-		String fragSeq = trans.substring(randomStart, randomStart + fragmentLength);			
+		randomStart += 1;
+		String fragSeq = trans.substring(randomStart, randomStart + fragmentLength);
 		Tuple<String, Integer> fragment = new Tuple<String, Integer>(fragSeq, randomStart);
 
 		return fragment;
@@ -249,22 +259,22 @@ public class ReadSimulator {
 
 		DNAUtils reverser = new DNAUtils();
 		String read;
-		
-		if(fragment.length() > length) {
+
+		if (fragment.length() > length) {
 			int start = fragment.length() - length;
 			String fwRread = fragment.substring(start, fragment.length());
 			read = reverser.revcomp(fwRread);
 		} else {
 			int start = fragment.length() - length;
 			String fwRread = fragment.substring(start, fragment.length());
-			read = reverser.revcomp(fwRread);			
+			read = reverser.revcomp(fwRread);
 		}
 		return read;
 
 	}
 
 	public static String generateRead(String fragment) {
-		String read = fragment.substring(0, length );
+		String read = fragment.substring(0, length);
 		return read;
 	}
 
@@ -334,20 +344,20 @@ public class ReadSimulator {
 			pos1 = parent.regions.get(i).getX1();
 		} else {
 			pos1 = parent.regions.get(i - 1).getX1()
-					+ (rdmStart - (distanceTravelled - parent.regions.get(i - 1).getLength() - i));
+					+ (rdmStart - (distanceTravelled - parent.regions.get(i - 1).getLength() - i) - 1);
 		}
 
-		if (rdmStart + FL < distanceTravelled - i) // if end is in first region
+		if (rdmStart + FL <= distanceTravelled) // if end is in first region
 		{
-			int pos12 = pos1 + FL;
+			int pos12 = pos1 + FL + 1;
 			Region onlyRegion = new Region(pos1, pos12);
 			genomicRegions.addRegion(onlyRegion);
 
 		} else {
-			Region firstRegion = new Region(pos1, parent.regions.get(i - 1).getX2());
+			Region firstRegion = new Region(pos1, parent.regions.get(i - 1).getX2() + 1);
 			genomicRegions.addRegion(firstRegion);
 
-			while (rdmStart + FL > distanceTravelled + i) // save regions inside of fragment
+			while (rdmStart + FL >= distanceTravelled) // save regions inside of fragment
 			{
 				distanceTravelled += parent.regions.get(i).getLength();
 				if (rdmStart + FL > distanceTravelled) // if FALSE: arrived at last region
@@ -357,21 +367,19 @@ public class ReadSimulator {
 				i++;
 			}
 			if (i != parent.regions.size()) {
-
-				int pos12;
-				Region lastRegion = new Region();
-				if (distanceTravelled - i != (rdmStart + FL)) {
-					pos12 = parent.regions.get(i - 1).getX2() - (distanceTravelled - (rdmStart + FL));
-					lastRegion = new Region(parent.regions.get(i - 1).getX1(), pos12 + 1);
-				} else {
-					pos12 = parent.regions.get(i).getX2() - distanceTravelled + i;
-					lastRegion = new Region(parent.regions.get(i).getX1(), pos12 + 1);
-				}
-				genomicRegions.addRegion(lastRegion);
 			}
+
+			int pos12;
+			Region lastRegion = new Region();
+			if (distanceTravelled - i != (rdmStart + FL)) {
+				pos12 = parent.regions.get(i - 1).getX2() - (distanceTravelled - (rdmStart + FL));
+				lastRegion = new Region(parent.regions.get(i - 1).getX1(), pos12);
+			} else {
+				pos12 = parent.regions.get(i).getX2() - distanceTravelled + i;
+				lastRegion = new Region(parent.regions.get(i).getX1(), pos12 + 1);
+			}
+			genomicRegions.addRegion(lastRegion);
 		}
 		return genomicRegions;
-
 	}
-
 }
