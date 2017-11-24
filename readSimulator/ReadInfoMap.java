@@ -92,7 +92,7 @@ public class ReadInfoMap {
 		
 		try {
 			
-			writer.write(id + "\t" + chr  + "\t" + gene + "\t" + transcript + "\t" + t_fwRegvec +"\t" + t_rwRegvec + "\t" +  fwregvec +"\t" + rwregvec + "\t" + fwMut + "\t" + rwMut );
+			writer.write(id + "\t" + chr  + "\t" + gene + "\t" + transcript + "\t" + t_fwRegvec +"\t" + t_rwRegvec + "\t" +  fwregvec +"\t" + rwregvec + "\t" + fwMut + "\t" + rwMut + " ");
 			writer.newLine();
 			
 		} catch (Exception e) {
