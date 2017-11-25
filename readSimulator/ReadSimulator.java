@@ -212,19 +212,36 @@ public class ReadSimulator {
 		RegionVector rw_regvec = getGenomicRegion(mutRead.getFirst().toString(), transGenomicRegion,
 				transSeqFrag.getSecond());
 
-		int revStartTrans = transSeq.length()-transSeqFrag.getSecond() - length;
+		int revStartTrans = transSeq.length() - transSeqFrag.getSecond() - length;
 		int revEndTrans = revStartTrans + length;
 		Region t_rw_regvec = new Region(revStartTrans, revEndTrans);
-//		 System.out.println("t_rw_regvec: " + t_rw_regvec);
 
-		 int fwStartTrans = revEndTrans - transSeqFrag.getFirst().length();
+		int fwStartTrans = revEndTrans - transSeqFrag.getFirst().length() - 1;
 		int fwEndTrans = fwStartTrans + length;
 		Region t_fw_regvec = new Region(fwStartTrans, fwEndTrans);
-//		 System.out.println("t_fw_regvec: " + t_fw_regvec);
-//		 System.out.println("FragLen: " + transSeqFrag.getFirst().length());
-//		 System.out.println("TransLen: " + transSeq.length());
-//		 System.out.println(transSeq.length() - revEndTrans);
-//		 System.out.println();
+
+		// if(!transSeq.substring(revStartTrans, revEndTrans).equals(fragmentRwRead)) {
+		// System.out.println(transSeq.length());
+		// System.out.println("Fragment: " + transSeqFrag);
+		// System.out.println("TranSeq:\t\t" + transSeq.substring(revStartTrans,
+		// revEndTrans));
+		// System.out.println("RvRead:\t\t" + fragmentRwRead);
+		// System.out.println();
+		// }
+		//
+		// if(!transSeq.substring(fwStartTrans, fwEndTrans).equals(fragmentRead)) {
+		// System.out.println(transSeq.length());
+		// System.out.println("Fragment: " + transSeqFrag);
+		// System.out.println("TranSeq:\t\t" + transSeq.substring(fwStartTrans,
+		// fwEndTrans));
+		// System.out.println("FwRead:\t\t" + fragmentRead);
+		// System.out.println();
+		// }
+
+//		if (mutRead.getSecond().contains(0) || mutRwRead.getSecond().contains(0)) {
+//			System.out.println(mutRead);
+//			System.out.println(mutRwRead);
+//		}
 
 		mapInfo.writeMapinfo(id, chr, geneID, transID, rw_regvec, fw_regvec, t_fw_regvec, t_rw_regvec,
 				mutRead.getSecond(), mutRwRead.getSecond());
@@ -248,7 +265,8 @@ public class ReadSimulator {
 		RegionVector rw_regvec = getGenomicRegion(mutRwRead.getFirst().toString(), transGenomicRegion,
 				(transSeqFrag.getSecond() + (transSeqFrag.getFirst().length() - length)));
 
-		RegionVector fw_regvec = getGenomicRegion(mutRead.getFirst().toString(), transGenomicRegion, transSeqFrag.getSecond());
+		RegionVector fw_regvec = getGenomicRegion(mutRead.getFirst().toString(), transGenomicRegion,
+				transSeqFrag.getSecond());
 
 		Region t_fw_regvec = new Region(transSeqFrag.getSecond(), (transSeqFrag.getSecond() + length));
 		// System.out.println("t_fw_regvec: " + t_fw_regvec);
@@ -257,6 +275,11 @@ public class ReadSimulator {
 				(transSeqFrag.getSecond() + transSeqFrag.getFirst().length()));
 		// System.out.println("t_rw_regvec: " + t_rw_regvec);
 
+//		if (mutRead.getSecond().contains(0) || mutRwRead.getSecond().contains(0)) {
+//			System.out.println(mutRead);
+//			System.out.println(mutRwRead);
+//		}
+		
 		mapInfo.writeMapinfo(id, chr, geneID, transID, fw_regvec, rw_regvec, t_fw_regvec, t_rw_regvec,
 				mutRead.getSecond(), mutRwRead.getSecond());
 
@@ -284,10 +307,10 @@ public class ReadSimulator {
 				try {
 
 					randomStart = ThreadLocalRandom.current().nextInt(possibleStarts - 1); // MAYBE: possibleStarts +1
-					if(randomStart == 0) {
+					if (randomStart == 0) {
 						randomStart++;
 					}
-					
+
 				} catch (Exception e) {
 					throw new RuntimeException("Error with trans " + trans + " and rdmStart " + randomStart
 							+ " possible starts: " + possibleStarts + " fragment length " + fragmentLength);
