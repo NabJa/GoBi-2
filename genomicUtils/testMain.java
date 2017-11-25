@@ -70,13 +70,20 @@ public class testMain {
 			// RegionVector genregions = getTheShitDone(testString, testVector, 1);
 			// System.out.println(genregions);
 
-			for (int i = 1; i < 60; i++) {
+			for (int i = 1; i < 225; i++) {
 				RegionVector genregions = getTheShitDone(testString, testVector, i);
 				System.out.println(i + " " + genregions);
 			}
 
 		}
 	}
+
+	
+	
+	public static void getTranscriptRegion (String trans, String rev, String fw) {
+		
+	}
+	
 	
 	public static RegionVector getTheShitDone(String fragment, RegionVector parent, int rdmStart) {
 		RegionVector genomicRegions = new RegionVector();

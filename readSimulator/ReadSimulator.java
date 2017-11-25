@@ -215,29 +215,17 @@ public class ReadSimulator {
 		int revStartTrans = transSeq.length()-transSeqFrag.getSecond() - length;
 		int revEndTrans = revStartTrans + length;
 		Region t_rw_regvec = new Region(revStartTrans, revEndTrans);
+//		 System.out.println("t_rw_regvec: " + t_rw_regvec);
 
-		 int fwStartTrans = revEndTrans - transSeqFrag.getFirst().length() - 1;
+		 int fwStartTrans = revEndTrans - transSeqFrag.getFirst().length();
 		int fwEndTrans = fwStartTrans + length;
 		Region t_fw_regvec = new Region(fwStartTrans, fwEndTrans);
+//		 System.out.println("t_fw_regvec: " + t_fw_regvec);
+//		 System.out.println("FragLen: " + transSeqFrag.getFirst().length());
+//		 System.out.println("TransLen: " + transSeq.length());
+//		 System.out.println(transSeq.length() - revEndTrans);
+//		 System.out.println();
 
-		if(!transSeq.substring(revStartTrans, revEndTrans).equals(fragmentRwRead)) {
-			System.out.println(transSeq.length());
-			System.out.println("Fragment: " + transSeqFrag);
-			System.out.println("TranSeq:\t\t" + transSeq.substring(revStartTrans, revEndTrans));
-			System.out.println("RvRead:\t\t" + fragmentRwRead);
-			System.out.println();
-		}
-		
-		if(!transSeq.substring(fwStartTrans, fwEndTrans).equals(fragmentRead)) {
-			System.out.println(transSeq.length());
-			System.out.println("Fragment: " + transSeqFrag);
-			System.out.println("TranSeq:\t\t" + transSeq.substring(fwStartTrans, fwEndTrans));
-			System.out.println("FwRead:\t\t" + fragmentRead);
-			System.out.println();
-		}
-		
-		
-		
 		mapInfo.writeMapinfo(id, chr, geneID, transID, rw_regvec, fw_regvec, t_fw_regvec, t_rw_regvec,
 				mutRead.getSecond(), mutRwRead.getSecond());
 	}
@@ -337,7 +325,7 @@ public class ReadSimulator {
 		String read = fragment.substring(0, length);
 		return read;
 	}
-	
+
 	public static Tuple<StringBuilder, ArrayList<Integer>> mutate(String read) {
 
 		Random rdm = new Random();
