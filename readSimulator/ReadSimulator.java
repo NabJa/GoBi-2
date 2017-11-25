@@ -1,11 +1,8 @@
 package readSimulator;
 
 import java.io.File;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 
 import fastqWriter.FastqWriter;
@@ -216,7 +213,7 @@ public class ReadSimulator {
 		int revEndTrans = revStartTrans + length;
 		Region t_rw_regvec = new Region(revStartTrans, revEndTrans);
 
-		int fwStartTrans = revEndTrans - transSeqFrag.getFirst().length() - 1;
+		int fwStartTrans = revEndTrans - transSeqFrag.getFirst().length();
 		int fwEndTrans = fwStartTrans + length;
 		Region t_fw_regvec = new Region(fwStartTrans, fwEndTrans);
 
