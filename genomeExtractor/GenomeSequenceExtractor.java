@@ -198,12 +198,6 @@ public class GenomeSequenceExtractor {
 		try {
 
 			raffasta.seek(indexStart + readStart - 1);
-			// raffasta.seek(indexStart + start);
-
-			// byte[] buffer = new byte[seqLen];
-			// raffasta.read(buffer);
-			// String exon = new String(buffer);
-			// seq += exon;
 
 			int len = 0;
 			while (len < seqLen) {
@@ -223,7 +217,6 @@ public class GenomeSequenceExtractor {
 
 		return seq;
 	}
-
 
 
 }

@@ -25,7 +25,7 @@ public class testMain {
 			System.out.println(genregions);
 
 		} else {
-			String testString = "12345678";
+			String testString = "12345";
 
 			Region r4 = new Region(10, 20); // 0:9
 			Region r5 = new Region(30, 40); // 10:19
@@ -70,14 +70,14 @@ public class testMain {
 			// RegionVector genregions = getTheShitDone(testString, testVector, 1);
 			// System.out.println(genregions);
 
-			for (int i = 1; i < 226; i++) {
+			for (int i = 1; i < 60; i++) {
 				RegionVector genregions = getTheShitDone(testString, testVector, i);
 				System.out.println(i + " " + genregions);
 			}
 
 		}
 	}
-
+	
 	public static RegionVector getTheShitDone(String fragment, RegionVector parent, int rdmStart) {
 		RegionVector genomicRegions = new RegionVector();
 

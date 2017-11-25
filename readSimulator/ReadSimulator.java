@@ -142,72 +142,41 @@ public class ReadSimulator {
 
 		// Generate all fragments and reads and write them directly in output
 		long id = 0;
+
 		for (Triplet<String, String, Integer> readcount : gse.readcounts) // For every transcript in readcounts ...
 		{
-
-			String transSeq = gse.sequences.get(readcount);
-			String revTransSeq = dnautil.revcomp(transSeq);
-			String transID = readcount.getSecond();
-
-			RegionVector transGenomicRegion = gse.transGenomicRegions.get(readcount);
-
 			Gene gene = gse.genes.get(readcount.getFirst());
 			String strand = gene.strand;
 			String chr = gene.geneChr;
 			String geneID = gene.geneID;
-//			System.out.println(readcount.getSecond());
 
-			for (int i = 0; i < readcount.getThird(); i++) // ... Make count many reads
-			{
-				Tuple<String, Integer> transSeqFrag = generateFragment(transSeq);
-				
-				String fragmentRead = generateRead(transSeqFrag.getFirst());
-				String fragmentRwRead = generateRwRead(transSeqFrag.getFirst());
+			if (strand.equals("-")) {
 
-				Tuple<StringBuilder, ArrayList<Integer>> mutRead = mutate(fragmentRead);
-				Tuple<StringBuilder, ArrayList<Integer>> mutRwRead = mutate(fragmentRwRead);
+				String transSeq = gse.sequences.get(readcount);
+				String revTransSeq = dnautil.revcomp(transSeq);
+				String transID = readcount.getSecond();
 
-				RegionVector fw_regvec;
-				RegionVector rw_regvec;
-				Region t_fw_regvec = new Region(0, 0);
-				Region t_rw_regvec = new Region(0, 0);
+				RegionVector transGenomicRegion = gse.transGenomicRegions.get(readcount);
 
-				if (strand.equals("-")) {
-
-					fastqFW.writeFastq(id, mutRead.getFirst().toString(), id, qualityString);
-					fastqRW.writeFastq(id, mutRwRead.getFirst().toString(), id, qualityString);
-
-					rw_regvec = getGenomicRegion(mutRwRead.getFirst().toString(), transGenomicRegion, (transSeqFrag.getSecond() + (transSeqFrag.getFirst().length() - length)));
-					
-					fw_regvec = getGenomicRegion(mutRead.getFirst().toString(), transGenomicRegion, transSeqFrag.getSecond());
-
-					t_fw_regvec.setRegions(transSeqFrag.getSecond(), (transSeqFrag.getSecond() + length));
-					System.out.println("t_fw_regvec: " + t_fw_regvec);
-					
-					t_rw_regvec.setRegions((transSeqFrag.getSecond() + transSeqFrag.getFirst().length() - length), (transSeqFrag.getSecond() + transSeqFrag.getFirst().length()));
-					System.out.println("t_rw_regvec: " + t_rw_regvec);
-
-					mapInfo.writeMapinfo(id, chr, geneID, transID, fw_regvec, rw_regvec, t_fw_regvec, t_rw_regvec, mutRead.getSecond(), mutRwRead.getSecond());
-					
-
-					mapInfo.writeMapinfo(id, chr, geneID, transID, fw_regvec, rw_regvec, t_fw_regvec, t_rw_regvec, mutRead.getSecond(), mutRwRead.getSecond());
-
-				} else {
-
-					fastqFW.writeFastq(id, mutRead.getFirst().toString(), id, qualityString);
-					fastqRW.writeFastq(id, mutRwRead.getFirst().toString(), id, qualityString);
-
-					rw_regvec = getGenomicRegion(mutRwRead.getFirst().toString(), transGenomicRegion, (transSeqFrag.getSecond() + (transSeqFrag.getFirst().length() - length)));
-					
-					fw_regvec = getGenomicRegion(mutRead.getFirst().toString(), transGenomicRegion, transSeqFrag.getSecond());
-
-					t_fw_regvec.setRegions(transSeqFrag.getSecond(), (transSeqFrag.getSecond() + length));
-					
-					t_rw_regvec.setRegions((transSeqFrag.getSecond() + transSeqFrag.getFirst().length() - length), (transSeqFrag.getSecond() + transSeqFrag.getFirst().length()));
-
-					mapInfo.writeMapinfo(id, chr, geneID, transID, fw_regvec, rw_regvec, t_fw_regvec, t_rw_regvec, mutRead.getSecond(), mutRwRead.getSecond());
+				for (int i = 0; i < readcount.getThird(); i++) // ... Make count many reads
+				{
+					generateMinusReads(transSeq, fastqFW, fastqRW, id, qualityString, transGenomicRegion, mapInfo, chr,
+							geneID, transID);
+					id++;
 				}
-				id++;
+			} else {
+
+				String transSeq = gse.sequences.get(readcount);
+				String revTransSeq = dnautil.revcomp(transSeq);
+				String transID = readcount.getSecond();
+
+				RegionVector transGenomicRegion = gse.transGenomicRegions.get(readcount);
+				for (int i = 0; i < readcount.getThird(); i++) // ... Make count many reads
+				{
+					generatePlusReads(transSeq, fastqFW, fastqRW, id, qualityString, transGenomicRegion, mapInfo, chr,
+							geneID, transID);
+					id++;
+				}
 			}
 		}
 
@@ -219,6 +188,89 @@ public class ReadSimulator {
 		// Program Time
 		long endTime1 = System.currentTimeMillis() - zeit;
 		System.out.println("Fertig in " + endTime1);
+
+	}
+
+	public static void generateMinusReads(String transSeq, FastqWriter fastqFW, FastqWriter fastqRW, long id,
+			String qualityString, RegionVector transGenomicRegion, ReadInfoMap mapInfo, String chr, String geneID,
+			String transID) {
+
+		Tuple<String, Integer> transSeqFrag = generateFragment(transSeq);
+
+		String fragmentRwRead = generateRead(transSeqFrag.getFirst());
+		String fragmentRead = generateRwRead(transSeqFrag.getFirst());
+
+		Tuple<StringBuilder, ArrayList<Integer>> mutRead = mutate(fragmentRead);
+		Tuple<StringBuilder, ArrayList<Integer>> mutRwRead = mutate(fragmentRwRead);
+
+		fastqFW.writeFastq(id, mutRead.getFirst().toString(), id, qualityString);
+		fastqRW.writeFastq(id, mutRwRead.getFirst().toString(), id, qualityString);
+
+		RegionVector fw_regvec = getGenomicRegion(mutRwRead.getFirst().toString(), transGenomicRegion,
+				(transSeqFrag.getSecond() + (transSeqFrag.getFirst().length() - length)));
+
+		RegionVector rw_regvec = getGenomicRegion(mutRead.getFirst().toString(), transGenomicRegion,
+				transSeqFrag.getSecond());
+
+		int revStartTrans = transSeq.length()-transSeqFrag.getSecond() - length;
+		int revEndTrans = revStartTrans + length;
+		Region t_rw_regvec = new Region(revStartTrans, revEndTrans);
+
+		 int fwStartTrans = revEndTrans - transSeqFrag.getFirst().length() - 1;
+		int fwEndTrans = fwStartTrans + length;
+		Region t_fw_regvec = new Region(fwStartTrans, fwEndTrans);
+
+		if(!transSeq.substring(revStartTrans, revEndTrans).equals(fragmentRwRead)) {
+			System.out.println(transSeq.length());
+			System.out.println("Fragment: " + transSeqFrag);
+			System.out.println("TranSeq:\t\t" + transSeq.substring(revStartTrans, revEndTrans));
+			System.out.println("RvRead:\t\t" + fragmentRwRead);
+			System.out.println();
+		}
+		
+		if(!transSeq.substring(fwStartTrans, fwEndTrans).equals(fragmentRead)) {
+			System.out.println(transSeq.length());
+			System.out.println("Fragment: " + transSeqFrag);
+			System.out.println("TranSeq:\t\t" + transSeq.substring(fwStartTrans, fwEndTrans));
+			System.out.println("FwRead:\t\t" + fragmentRead);
+			System.out.println();
+		}
+		
+		
+		
+		mapInfo.writeMapinfo(id, chr, geneID, transID, rw_regvec, fw_regvec, t_fw_regvec, t_rw_regvec,
+				mutRead.getSecond(), mutRwRead.getSecond());
+	}
+
+	public static void generatePlusReads(String transSeq, FastqWriter fastqFW, FastqWriter fastqRW, long id,
+			String qualityString, RegionVector transGenomicRegion, ReadInfoMap mapInfo, String chr, String geneID,
+			String transID) {
+
+		Tuple<String, Integer> transSeqFrag = generateFragment(transSeq);
+
+		// Get Fw and Rev read sequences:
+		String fragmentRead = generateRead(transSeqFrag.getFirst());
+		String fragmentRwRead = generateRwRead(transSeqFrag.getFirst());
+		Tuple<StringBuilder, ArrayList<Integer>> mutRead = mutate(fragmentRead);
+		Tuple<StringBuilder, ArrayList<Integer>> mutRwRead = mutate(fragmentRwRead);
+		// Write reads in Fastq
+		fastqFW.writeFastq(id, mutRead.getFirst().toString(), id, qualityString);
+		fastqRW.writeFastq(id, mutRwRead.getFirst().toString(), id, qualityString);
+
+		RegionVector rw_regvec = getGenomicRegion(mutRwRead.getFirst().toString(), transGenomicRegion,
+				(transSeqFrag.getSecond() + (transSeqFrag.getFirst().length() - length)));
+
+		RegionVector fw_regvec = getGenomicRegion(mutRead.getFirst().toString(), transGenomicRegion, transSeqFrag.getSecond());
+
+		Region t_fw_regvec = new Region(transSeqFrag.getSecond(), (transSeqFrag.getSecond() + length));
+		// System.out.println("t_fw_regvec: " + t_fw_regvec);
+
+		Region t_rw_regvec = new Region((transSeqFrag.getSecond() + transSeqFrag.getFirst().length() - length),
+				(transSeqFrag.getSecond() + transSeqFrag.getFirst().length()));
+		// System.out.println("t_rw_regvec: " + t_rw_regvec);
+
+		mapInfo.writeMapinfo(id, chr, geneID, transID, fw_regvec, rw_regvec, t_fw_regvec, t_rw_regvec,
+				mutRead.getSecond(), mutRwRead.getSecond());
 
 	}
 
@@ -237,26 +289,30 @@ public class ReadSimulator {
 			fragmentLength = fragmentLength1 < 0 ? -fragmentLength1 : fragmentLength1;
 		}
 
-		int randomStart = 0;
+		int randomStart = 1;
 		if (trans.length() != fragmentLength) {
 			int possibleStarts = trans.length() - fragmentLength;
-			try {
+			if (possibleStarts > 1) {
+				try {
 
-				randomStart = ThreadLocalRandom.current().nextInt(possibleStarts - 1); // MAYBE: possibleStarts +1
-
-			} catch (Exception e) {
-				throw new RuntimeException("Error with trans " + trans + " and rdmStart " + randomStart
-						+ " possible starts: " + possibleStarts + " fragment length " + fragmentLength);
+					randomStart = ThreadLocalRandom.current().nextInt(possibleStarts - 1); // MAYBE: possibleStarts +1
+					if(randomStart == 0) {
+						randomStart++;
+					}
+					
+				} catch (Exception e) {
+					throw new RuntimeException("Error with trans " + trans + " and rdmStart " + randomStart
+							+ " possible starts: " + possibleStarts + " fragment length " + fragmentLength);
+				}
+			} else {
+				randomStart = 1;
 			}
 		}
-		if(randomStart == 0) {
-			randomStart += 1;			
-		}
-//		System.out.println(randomStart + " " + trans.length() + " " + trans);
+		// System.out.println(randomStart + " " + trans.length() + " " + trans);
 		String fragSeq = trans.substring(randomStart, randomStart + fragmentLength);
 		Tuple<String, Integer> fragment = new Tuple<String, Integer>(fragSeq, randomStart);
-
 		return fragment;
+
 	}
 
 	public static String generateRwRead(String fragment) {
@@ -281,7 +337,7 @@ public class ReadSimulator {
 		String read = fragment.substring(0, length);
 		return read;
 	}
-
+	
 	public static Tuple<StringBuilder, ArrayList<Integer>> mutate(String read) {
 
 		Random rdm = new Random();
@@ -370,9 +426,10 @@ public class ReadSimulator {
 						genomicRegions.addRegion(parent.regions.get(i));
 					}
 					i++;
-				}				
+				}
 			} catch (Exception e) {
-				throw new RuntimeException("RandomStart:  " + rdmStart + " FragmentL: " + FL + " DT: " + distanceTravelled + "\n" + parent + "\n" + fragment);
+				throw new RuntimeException("RandomStart:  " + rdmStart + " FragmentL: " + FL + " DT: "
+						+ distanceTravelled + "\n" + parent + "\n" + fragment);
 			}
 
 			int pos12 = parent.regions.get(i - 1).getX2() - (distanceTravelled - (rdmStart + FL));
