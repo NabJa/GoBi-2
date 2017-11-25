@@ -145,18 +145,20 @@ public class GenomeSequenceExtractor {
 
 			String chr = genes.get(readcount.getFirst()).geneChr;
 
-			for (Region r : genes.get(readcount.getFirst()).transcripts.get(readcount.getSecond()).regions) // Gets
-																											// sequence
-																											// and
-																											// genmic
-																											// position
-																											// of every
-																											// region
-			{
-				String seq = getSequence(chr, r.getX1(), r.getX2());
+			// Gets sequence and genomic position of every region
+			for (Region r : genes.get(readcount.getFirst()).transcripts.get(readcount.getSecond()).regions) {
+				
+				String geneStrand = genes.get(readcount.getFirst()).strand;
 
-				splicedTrans += seq;
-				genomicRegions.addRegion(r);
+				if (!geneStrand.equals("-")) {
+					String seq = getSequence(chr, r.getX1(), r.getX2());
+					splicedTrans += seq;
+					genomicRegions.addRegion(r);
+				} else {
+					String seq = getSequence(chr, r.getX1()+1, r.getX2()+1);
+					splicedTrans += seq;
+					genomicRegions.addRegion(r);
+				}
 			}
 			splicedTrans.trim(); // maybe trim already in loop?
 
@@ -217,6 +219,5 @@ public class GenomeSequenceExtractor {
 
 		return seq;
 	}
-
 
 }

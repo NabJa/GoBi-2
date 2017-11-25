@@ -26,7 +26,7 @@ public class testMain {
 
 		} else {
 			String testString = "12345";
-
+			
 			Region r4 = new Region(10, 20); // 0:9
 			Region r5 = new Region(30, 40); // 10:19
 			Region r6 = new Region(50, 60); // 20:35
@@ -70,7 +70,7 @@ public class testMain {
 			// RegionVector genregions = getTheShitDone(testString, testVector, 1);
 			// System.out.println(genregions);
 
-			for (int i = 1; i < 60; i++) {
+			for (int i = 1; i < 225; i++) {
 				RegionVector genregions = getTheShitDone(testString, testVector, i);
 				System.out.println(i + " " + genregions);
 			}
@@ -114,7 +114,7 @@ public class testMain {
 			genomicRegions.addRegion(firstRegion);
 
 			try {
-				while (rdmStart + FL >= distanceTravelled) // save regions inside of fragment
+				while (rdmStart + FL > distanceTravelled) // save regions inside of fragment
 				{
 					distanceTravelled += parent.regions.get(i).getLength();
 					if (rdmStart + FL > distanceTravelled) // if FALSE: arrived at last region
