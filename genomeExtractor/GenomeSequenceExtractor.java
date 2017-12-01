@@ -7,6 +7,7 @@ import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import genomicUtils.DNAUtils;
 import genomicUtils.GTFReader;
 import genomicUtils.Gene;
 import genomicUtils.Region;
@@ -32,10 +33,13 @@ public class GenomeSequenceExtractor {
 
 	public HashMap<Triplet<String, String, Integer>, String> sequences = new HashMap<Triplet<String, String, Integer>, String>();
 	public HashMap<Triplet<String, String, Integer>, RegionVector> transGenomicRegions = new HashMap<Triplet<String, String, Integer>, RegionVector>();
-	// ArrayList<String> sequences = new ArrayList<String>();
+
+	public HashMap<String, String> transcripts = new HashMap<String, String>();
+
+	public GenomeSequenceExtractor() {
+	}
 
 	/**
-	 * 
 	 * @param fasta
 	 * @param idx
 	 */
@@ -110,7 +114,6 @@ public class GenomeSequenceExtractor {
 	}
 
 	/**
-	 * 
 	 * @param gtf
 	 */
 	public void readGTF(String gtf) {
@@ -119,51 +122,36 @@ public class GenomeSequenceExtractor {
 		genes = gtfreader.getGenes();
 	}
 
-	/**
-	 * @param geneID
-	 * @param transcriptID
-	 * @return
-	 */
-	public Triplet<String, Integer, Integer> getTranscriptPos(String geneID, String transcriptID) {
-		Gene gene = genes.get(geneID);
-		RegionVector trans = gene.transcripts.get(transcriptID);
-
-		Integer start = trans.getX1();
-		Integer end = trans.getX2();
-		String chr = gene.geneChr;
-
-		Triplet<String, Integer, Integer> position = new Triplet<String, Integer, Integer>(chr, start, end);
-		return position;
-	}
-
 	public void getAllSequences() {
 
+		DNAUtils dnau = new DNAUtils();
+			
 		for (Triplet<String, String, Integer> readcount : readcounts) // readcount = geneID, transID, count
 		{
 			String splicedTrans = "";
 			RegionVector genomicRegions = new RegionVector(readcount.getSecond());
 
 			String chr = genes.get(readcount.getFirst()).geneChr;
+			String geneStrand = genes.get(readcount.getFirst()).strand;
 
 			// Gets sequence and genomic position of every region
 			for (Region r : genes.get(readcount.getFirst()).transcripts.get(readcount.getSecond()).regions) {
-				
-				String geneStrand = genes.get(readcount.getFirst()).strand;
 
-				if (!geneStrand.equals("-")) {
-					String seq = getSequence(chr, r.getX1(), r.getX2());
-					splicedTrans += seq;
-					genomicRegions.addRegion(r);
-				} else {
-					String seq = getSequence(chr, r.getX1()+1, r.getX2()+1);
-					splicedTrans += seq;
-					genomicRegions.addRegion(r);
-				}
+				String seq = "";
+				seq = getSequence(chr, r.getX1(), r.getX2(), geneStrand);
+				splicedTrans += seq;
+				genomicRegions.addRegion(r);
 			}
-			splicedTrans.trim(); // maybe trim already in loop?
-
 			transGenomicRegions.put(readcount, genomicRegions);
 			sequences.put(readcount, splicedTrans);
+
+			
+//Only for transcriptom check;
+//			if(geneStrand.equals("-")) {
+//				System.out.println(readcount.getSecond());
+//				splicedTrans = dnau.revcomp(splicedTrans);
+//			}
+		
 		}
 		try {
 			raffasta.close();
@@ -178,7 +166,7 @@ public class GenomeSequenceExtractor {
 	 * @param start
 	 * @param end
 	 */
-	public String getSequence(String chr, int start, int end) {
+	public String getSequence(String chr, int start, int end, String strand) {
 
 		IndexLine index = null;
 		for (IndexLine idx : genomicIndex) {
@@ -192,32 +180,82 @@ public class GenomeSequenceExtractor {
 		int indexLineLen = index.lineLength();
 		int indexLineTotal = index.lineTotalLength();
 		int breakLen = indexLineTotal - indexLineLen;
-		int seqLen = (end - start + 1);
-		int skipLines = (int) Math.floor(start / indexLineLen);
-		int readStart = start + skipLines * breakLen;
+		int seqLen = end - start;
+		int skipLines = (int) start / indexLineLen;
+		int readStart = start + skipLines;
 
 		String seq = "";
 		try {
 
-			raffasta.seek(indexStart + readStart - 1);
+			if (readStart % 61 == 0) {
+				raffasta.seek(indexStart + readStart - 2);
+			} else {
+				raffasta.seek(indexStart + readStart - 1);
+			}
+	
+			byte b;
+			while (seq.length() < seqLen) {
 
-			int len = 0;
-			while (len < seqLen) {
-				int read = raffasta.read();
-				char readChar = (char) read;
-				if (readChar != '\n') {
-					seq += readChar;
-					len++;
+				b = raffasta.readByte();
+
+				if ((char) b != '\n') {
+					seq += (char) b;
 				}
+
 			}
 
 		} catch (Exception e) {
 			throw new RuntimeException("got error while reading input raf files", e);
 		}
-
-		seq = seq.replaceAll("\n", "");
-
 		return seq;
 	}
 
+	public void readTranscriptom(String transcriptom) {
+
+		File transFasta = new File(transcriptom);
+		BufferedReader bfreader = null;
+
+		try {
+			bfreader = new BufferedReader(new FileReader(transFasta));
+
+			String rline = "";
+			String transID = "";
+			String sequence = "";
+			while ((rline = bfreader.readLine()) != null) {
+				if (rline.startsWith(">")) {
+					transcripts.put(transID, sequence);
+					sequence = "";
+					int idLen = rline.indexOf(" ");
+					transID = rline.substring(1, idLen);
+					if(transID.length()>20) {
+						System.out.println("Very long transID: " + transID);
+					}
+				} else {
+					sequence += rline;
+				}
+			}
+			transcripts.remove("");
+			transcripts.put(transID, sequence);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				bfreader.close();
+			} catch (Exception e) {
+				throw new RuntimeException("got error while closing fastaReader.", e);
+			}
+		}
+	}
+
+	public void checkTrans(String transID, String trans) {
+		String correctSeq = transcripts.get(transID);
+
+		if (correctSeq == null) {
+			System.out.println("Transcipt not found: "+ transID+ "\n" + trans);
+		} else {
+			if (!correctSeq.equals(trans)) {
+				System.out.println("Correct Sequence: " + transID  +"\n" + correctSeq + "\n" + "Youre Seq:" + "\n" + trans);
+			}
+		}
+	}
 }

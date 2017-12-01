@@ -28,7 +28,8 @@ public class DNAUtils {
 		char[] revcompa = comp.toCharArray();
 		String revcomp = "";
 
-		for(int i = revcompa.length-1; i >= 0; i--) {
+		for(int i = revcompa.length-1; i >= 0; --i)
+		{
 			revcomp += revcompa[i];
 		}	
 		

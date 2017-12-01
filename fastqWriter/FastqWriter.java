@@ -59,7 +59,7 @@ public class FastqWriter {
 			this.writer = new BufferedWriter(file);
 		} catch (Exception e) {
 			throw new RuntimeException("got error while /.", e);
-		}
+		} 
 	}
 	
 	public FastqWriter(String outputDestination) {

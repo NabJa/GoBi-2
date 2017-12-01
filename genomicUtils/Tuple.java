@@ -9,6 +9,11 @@ public class Tuple<X, Y> {
 		this.second = second;
 	}
 	
+//	public void setTuple(X first, Y second) {
+//		this.first = first;
+//		this.second = second;
+//	}
+	
 	public X getFirst() {
 		return first;
 	}

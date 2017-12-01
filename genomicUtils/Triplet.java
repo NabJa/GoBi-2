@@ -28,4 +28,5 @@ public class Triplet<X, Y, Z> {
 	public String toString() {
 		return "" + first + " " + second + " " + third;
 	}
+
 }

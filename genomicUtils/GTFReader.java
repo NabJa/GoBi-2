@@ -43,7 +43,7 @@ public class GTFReader {
 						
 						String chr = line[0];
 						int start = Integer.parseInt(line[3]);
-						int end = Integer.parseInt(line[4]); 
+						int end = Integer.parseInt(line[4]) + 1; //for end exclusive 
 						String strand = line[6];
 
 						String transID = transcriptIDSearch(line);
@@ -57,10 +57,10 @@ public class GTFReader {
 
 						Region cds = new Region(start, end, proteinID);
 						RegionVector transcript = new RegionVector(transID);
+						
 
 						if (newGene == null) // means this gene is new
 						{
-
 							transcript.addRegion(cds);
 							gene.transcripts.put(transID, transcript);
 

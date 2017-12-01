@@ -10,7 +10,7 @@ public class RegionVector {
 	public int x1 = Integer.MAX_VALUE; // transcript start
 	public int x2 = 0; // transcript end
 
-	public ArrayList<Region> regions = new ArrayList<Region>(); // maybe Vector instead of ArrayList???
+	public ArrayList<Region> regions = new ArrayList<Region>();
 
 	public RegionVector() {
 	}
